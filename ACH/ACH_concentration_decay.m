@@ -1,5 +1,4 @@
-% function ACH = ACH_concentration_decay(data)
-function ACH_concentration_decay(data.time, data.c, input_options)
+function ACH = ACH_concentration_decay(data, input_options)
 % A function computes air change per hour(ACH) with given concentration
 % decay measurement data
 %
@@ -21,11 +20,18 @@ if length(data.time) ~= length(data.c)
 end
 
 % options
-if(exist('input_options') & ~isempty(input_options))
-    if(exist('input_options.minute_average'))   input_options.minute_average = false; end
-    if(exist('input_options.smoothing_scheme')) input_options.smoothing_scheme = 'moving'; end
-    if(exist('input_options.smoothing_span'))   input_options.smoothing_span = 31; end
-    if(exist('input_options.plot'))             input_options.plot = true; end
+
+input_options
+
+if(exist('input_options','var') && ~isempty(input_options))
+    display('1asdasd')
+    if(~exist('input_options.minute_average','var'))   
+        display('minute average option not exist');
+        input_options.minute_average = false; 
+    end
+    if(~exist('input_options.smoothing_scheme')) input_options.smoothing_scheme = 'moving'; end
+    if(~exist('input_options.smoothing_span'))   input_options.smoothing_span = 31; end
+    if(~exist('input_options.plot'))             input_options.plot = true; end
 else
     input_options.minute_average = false;
     input_options.smoothing_scheme = 'moving';
@@ -40,6 +46,7 @@ TT_raw = timetable(data.time, data.c);
 
 if input_options.minute_average
     TT = retime(TT_raw,'minutely','mean');
+    TT.c = TT.Var1;
     time_scale = 60;
 else
     TT = TT_raw;
