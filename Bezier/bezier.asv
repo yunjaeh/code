@@ -1,0 +1,27 @@
+% function bezierPt = bezier(Pts)
+function bezierPt = bezier(xPts, yPts)
+    xPts = [0, 1, 2];
+    yPts = [0, 1, 0];
+    Pts = [0, 1, 2; 0, 1, 0];
+    t = linspace(0,1,100);
+    n = length(Pts);        % Bezier Order
+    
+    yy = zeros(1,length(t));
+    % Bezier coefficients
+    n
+    
+    for i=0:n
+        c(i+1) = nchoosek(n,i);
+        yy = yy + c(i+1) * (t.^i) .* ((1-t).*(n-i));
+    end
+    size(yy)
+    
+    figure();
+    hold on
+    plot(Pts(:,1), Pts(:,2));
+    plot(t,yy);
+    
+     
+    
+
+end
