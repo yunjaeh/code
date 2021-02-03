@@ -6,10 +6,10 @@ from datetime import datetime
 
 
 class postProcess():
-    def __init__(self,fname,dirData='./',dirFig='./'):
+    def __init__(self,fname,dirInput='./',dirOutput='./'):
         self.fname = fname
-        self.dirData = dirData
-        self.dirFig = dirFig
+        self.dirInput = dirInput
+        self.dirOutput = dirOutput
         self.time = []
         self.cRaw = []
         self.c = np.empty(0)
@@ -20,10 +20,34 @@ class postProcess():
         self.dataIdx = []
         self.cRawMinMax = []
 
-        if (dirFig != './'):
-            os.system('mkdir '+dirFig)
-        
-        with open(self.dirData + self.fname) as fp:
+        if(dirOutput != './'):
+            if not os.path.exists(dirOutput):
+                os.mkdirs(dirOutput)
+            
+        self.readData()
+
+    def __repr__(self):
+        # print summary of raw data
+        # the number of experiments in the file
+        # minimum and maximum concentration of  each experiment
+        message = []
+        message.append(self.fname+', # test:'+str(self.numTest))
+        # print('idx data:', self.dataIdx)
+        for i in range(self.numTest):
+            message.append(' * Test '+str(i+1) )
+            message.append('  PM \t (min, max): '+str(self.cRawMinMax[i]))
+            if (i+1) in self.ACH_target.keys():
+                tempACH = self.ACH_target[i+1]
+                message.append('  ACH \t (min, max): ' \
+                    + str((round(tempACH.min(),2), round(tempACH.max(),2))))
+                message.append(' \t Mean: '+str(round(tempACH.mean(),2)) + \
+                ',\t Std:  '+str(round(tempACH.std(),2)) )
+            message.append('')
+       
+        return '\n'.join(message)    
+
+    def readData(self):
+        with open(self.dirInput + self.fname) as fp:
             idx_temp = 0
             for line in fp:
                 line_split = line.split(',')
@@ -48,36 +72,13 @@ class postProcess():
             self.cRawMinMax.append( (min(self.cRaw[self.dataIdx[i]:self.dataIdx[i+1]]), \
                 max(self.cRaw[self.dataIdx[i]:self.dataIdx[i+1]])))
 
-    def __repr__(self):
-        # print summary of raw data
-        # the number of experiments in the file
-        # minimum and maximum concentration of  each experiment
-        message = []
-        message.append('# of test:'+str(self.numTest))
-        # print('idx data:', self.dataIdx)
-        for i in range(self.numTest):
-            message.append(' Test '+str(i+1) )
-            message.append(' * PM \t (min, max):'+str(self.cRawMinMax[i]))
-            if (i+1) in self.ACH_target.keys():
-                tempACH = self.ACH_target[i+1]
-                message.append(' * ACH \t (min, max): ' \
-                    + str(round(tempACH.min(),2))+', ' + str(round(tempACH.max(),2)) )
-                message.append(' \t Mean: '+str(round(tempACH.mean(),2)) + \
-                ',\t Std:  '+str(round(tempACH.std(),2)) )
- 
-            message.append('')
-
-        
-        return '\n'.join(message)
-
-
     def plotRaw(self):
         plt.plot(range(len(self.c)),np.log(self.cRaw))
         plt.plot(range(len(self.c)),self.c)
         plt.xlabel('Time [sec]')
         plt.ylabel('log(Concentration)')
         plt.title('Raw and smoothed data')
-        plt.savefig(self.dirFig + self.fname.replace('.csv','.png'))
+        plt.savefig(self.dirOutput + self.fname.replace('.csv','.png'))
         plt.cla()
 #         plt.show()
     
@@ -103,7 +104,7 @@ class postProcess():
         plt.xlabel('Time [sec]')
         plt.ylabel('ACH [1/hr]')
         # plt.show()
-        plt.savefig(self.dirFig + self.fname.replace('.csv','') \
+        plt.savefig(self.dirOutput + self.fname.replace('.csv','') \
             +'_'+str(testIdx)+'.png')
         plt.cla()
 
@@ -113,6 +114,7 @@ class postProcess():
         return self.ACH_target[testIdx]
         # [range(period[0],period[2])]
         
+
 
         
     def minute_avg(self):
